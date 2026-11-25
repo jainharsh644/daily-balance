@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf6f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Daily Balance">
+<title>Daily Balance</title>
+<style>
+:root{--bg:#faf6f0;--card:#fffdf9;--ink:#3b332c;--muted:#857a6e;--line:#ece3d7;--accent:#c06a48;--accent-soft:#f6e3d8;--sage:#5f8a69;--sage-soft:#e2ede3;--warn:#a86a12;--warn-soft:#fbefd6;--chip:#f3ece2;--r:16px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1b18;--card:#2a2521;--ink:#efe7dd;--muted:#a99c8e;--line:#3a332d;--accent:#e08a66;--accent-soft:#4a3329;--sage:#8fb497;--sage-soft:#2f3b31;--warn:#e0a84a;--warn-soft:#45371f;--chip:#352e28}}
+:root[data-theme="dark"]{--bg:#1f1b18;--card:#2a2521;--ink:#efe7dd;--muted:#a99c8e;--line:#3a332d;--accent:#e08a66;--accent-soft:#4a3329;--sage:#8fb497;--sage-soft:#2f3b31;--warn:#e0a84a;--warn-soft:#45371f;--chip:#352e28}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top)) 16px 8px}
+.hrow{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:6px}
+header h1{font-size:19px;margin:0;flex:1;font-weight:650}
+.datebar{display:flex;align-items:center;gap:2px}
+.datebar input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:4px 6px;font-size:14px;max-width:140px}
+.nav-ic{border:0;background:none;font-size:20px;padding:4px 8px;color:var(--muted);cursor:pointer}
+main{max-width:560px;margin:0 auto;padding:8px 16px calc(96px + env(safe-area-inset-bottom))}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.tabs button{flex:1;max-width:112px;border:0;background:none;color:var(--muted);padding:7px 0 9px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer}
+nav.tabs .i{font-size:19px;line-height:1.2}
+nav.tabs button.on{color:var(--accent);font-weight:650}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:12px 0}
+.card h2{font-size:16px;margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h3{font-size:15px;margin:12px 0 6px}
+.card.soft{background:var(--accent-soft);border-color:transparent}
+.card.calm{background:var(--sage-soft);border-color:transparent}
+.sub{color:var(--muted);font-size:14px;margin:6px 2px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.4}
+.lbl{font-size:13px;color:var(--muted);margin:8px 0 4px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rate{display:flex;gap:6px}
+.rate button{flex:1;min-height:42px;border:1px solid var(--line);background:var(--chip);border-radius:12px;font-weight:600;cursor:pointer}
+.rate button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.ratelab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:2px}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--chip)}
+.stepper button{border:0;background:none;width:44px;height:42px;font-size:20px;cursor:pointer}
+.stepper .sv{min-width:84px;text-align:center;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none}
+.chip.on,.chip:has(input:checked){background:var(--sage);border-color:var(--sage);color:#fff}
+.chip input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer;min-height:42px}
+.btn.ghost{background:var(--chip);color:var(--ink);border:1px solid var(--line)}
+.btn.wide{width:100%;margin:6px 0}
+.btn.danger{background:none;color:var(--accent);border:1px solid var(--accent)}
+.link{border:0;background:none;color:var(--accent);padding:6px 0;font-weight:600;cursor:pointer}
+.ic{border:1px solid var(--line);background:var(--chip);border-radius:8px;padding:4px 9px;font-size:13px;cursor:pointer;margin-left:4px}
+input[type=text],input[type=number],input[type=time],input:not([type]),select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px;margin:3px 0}
+textarea{min-height:64px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+details{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;list-style:none;padding:4px 0}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋ ";}
+details[open]>summary::before{content:"－ "}
+details.sec{border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:10px 16px;margin:12px 0}
+details.sec>summary{font-size:16px;color:var(--ink)}
+ul.items{list-style:none;padding:0;margin:8px 0}
+ul.items li{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+ul.items li:last-child{border-bottom:0}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.tag{font-size:11.5px;background:var(--chip);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.tag.flag{background:var(--warn-soft);color:var(--warn)}
+.medrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
+.seg button{border:0;background:var(--chip);padding:8px 12px;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--sage);color:#fff}
+.seg button.on.miss{background:var(--muted)}
+.big{font-size:44px;font-weight:700;line-height:1.1}
+.big.muted{font-size:22px}
+.of{font-size:18px;color:var(--muted);font-weight:500}
+.mrow{display:grid;grid-template-columns:118px 1fr 40px;align-items:center;gap:8px;font-size:13.5px;padding:3px 0}
+.mbar,.pbar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;display:block}
+.mbar i,.pbar i{display:block;height:100%;background:var(--sage);border-radius:99px}
+.mval{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.prow{padding:6px 0}
+.prow .spread{font-size:14px;margin-bottom:4px}
+.obs li{margin:6px 0}
+.flagbox{background:var(--warn-soft);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}
+.flagbox b{color:var(--warn)}
+.infobox{background:var(--chip);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}
+.scorehead{display:flex;justify-content:space-between;align-items:baseline}
+.scoreval{font-size:26px;font-weight:700}
+.badge{font-size:11.5px;border-radius:99px;padding:2px 8px;background:var(--warn-soft);color:var(--warn);font-weight:600}
+.wt{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.wt input{width:70px}
+.chart{width:100%;height:auto;display:block}
+.chart .bar{fill:var(--accent);opacity:.55}.chart .bar.met{fill:var(--sage);opacity:1}
+.chart .cl,.chart .cv,.chart .cna,.chart .gl{font-size:10px;fill:var(--muted);text-anchor:middle}
+.chart .cv{fill:var(--ink);font-weight:600}
+.chart .gl{text-anchor:end}
+.chart .goal{stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1}
+.chart .l1{stroke:var(--accent);fill:none;stroke-width:2.5}.chart .d1{fill:var(--accent)}
+.chart .l2{stroke:var(--sage);fill:none;stroke-width:2.5}.chart .d2{fill:var(--sage)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9;max-width:90vw}
+#toast.show{opacity:1}
+pre.copy{white-space:pre-wrap;background:var(--chip);border-radius:10px;padding:10px;font-size:13px}
+@media (max-width:380px){.mrow{grid-template-columns:96px 1fr 36px}.grid3{grid-template-columns:1fr 1fr}.grid3>:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header class="top"><div class="hrow">
+  <h1 id="title">Today</h1>
+  <div class="datebar">
+    <button class="nav-ic" onclick="shiftDay(-1)" aria-label="Previous day">‹</button>
+    <input type="date" id="dp" onchange="setDate(this.value)" aria-label="Date">
+    <button class="nav-ic" id="nextDay" onclick="shiftDay(1)" aria-label="Next day">›</button>
+  </div>
+</div></header>
+<main id="view"></main>
+<nav class="tabs" id="tabs"></nav>
+<div id="toast" role="status"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden onchange="importJSON(this)">
+<script>
+"use strict";
+/* ===================== Storage & state ===================== */
+const KEY='dailyBalance.v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ds(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return ds(d)};
+const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const splitList=s=>String(s||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+
+const CATS=[
+ {id:'skincare',name:'Skincare routine',short:'Skincare',icon:'🧴'},
+ {id:'nutrition',name:'Nutrition variety',short:'Nutrition',icon:'🥗'},
+ {id:'hydration',name:'Hydration',short:'Hydration',icon:'💧'},
+ {id:'movement',name:'Movement',short:'Movement',icon:'🚶'},
+ {id:'sleep',name:'Sleep',short:'Sleep',icon:'🌙'},
+ {id:'mood',name:'Mood & energy check-in',short:'Mood check-in',icon:'🙂'},
+ {id:'meds',name:'Meds & supplements (as scheduled)',short:'Meds/supps',icon:'💊'},
+ {id:'learning',name:'Skill-building',short:'Learning',icon:'📚'}];
+const FOOD_GROUPS=['Vegetables','Fruit','Protein','Whole grains','Dairy / alternatives','Legumes, nuts & seeds'];
+const SKIN_TAGS=['Dry','Oily','Irritated','Breakout','Calm','Improving'];
+
+function defaults(){return{version:1,
+ settings:{goals:{water:8,sleep:7.5,exercise:30,learning:30,fruitVeg:5},waterUnit:'glasses',
+  weights:{skincare:1,nutrition:1,hydration:1,movement:1,sleep:1,mood:1,meds:1,learning:1},
+  skin:{type:'',concerns:'',sensitivities:''},
+  steps:{am:['Cleanse','Moisturize','Sunscreen'],pm:['Cleanse','Treatment','Moisturize']},
+  meds:[],reminders:[],custom:[],ack:false},
+ products:[],days:{},remDone:{}}}
+function blankDay(){return{mood:null,energy:null,sleepH:null,sleepQ:null,symptoms:'',notes:'',water:null,
+ skin:{am:{},pm:{}},skinTags:[],skinNotes:'',productsUsed:[],meals:[],fruitVeg:null,medLog:{},moves:[],rest:false,learn:[],custom:{}}}
+function fill(t,s){if(!s||typeof s!=='object')return t;for(const k in t){if(s[k]===undefined)s[k]=t[k];else if(t[k]&&typeof t[k]==='object'&&!Array.isArray(t[k])&&s[k]&&typeof s[k]==='object')fill(t[k],s[k])}return s}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw)return fill(defaults(),JSON.parse(raw))}catch(e){}return defaults()}
+let S=load(), storageOK=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(storageOK)toast('Couldn’t save — browser storage is unavailable here. Use Export to keep a copy.');storageOK=false}}
+
+let tab='today',cur=today(),open=new Set(),editing=null,keepInputs=true;
+const D=(date=cur)=>S.days[date]?fill(blankDay(),S.days[date]):blankDay();
+function upd(fn){const d=D(cur);fn(d);S.days[cur]=d;save();render()}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
+
+/* ===================== Helpers for day data ===================== */
+const moveMin=d=>d.moves.reduce((a,m)=>a+(+m.min||0),0);
+const learnMin=d=>d.learn.reduce((a,m)=>a+(+m.min||0),0);
+const skinCount=d=>{const st=S.settings.steps;return{amD:st.am.filter(s=>d.skin.am[s]).length,pmD:st.pm.filter(s=>d.skin.pm[s]).length,amN:st.am.length,pmN:st.pm.length}};
+function schedule(){return S.settings.meds.flatMap((m,i)=>(m.times.length?m.times:['']).map((t,j)=>({m,t,i,j,k:m.id+'@'+j})))}
+function hasAny(d){return d.mood!=null||d.energy!=null||d.sleepH!=null||d.water!=null||d.meals.length||d.fruitVeg!=null||d.moves.length||d.rest||d.learn.length||Object.keys(d.medLog).length||Object.values(d.skin.am).some(Boolean)||Object.values(d.skin.pm).some(Boolean)||d.symptoms||d.notes}
+
+/* ===================== Scoring ===================== */
+function score(date){
+ const d=D(date),g=S.settings.goals,res={};
+ const R=(id,o)=>res[id]=Object.assign({score:null,partial:false,why:'',up:[],down:[],next:'',pnote:''},o);
+ // Skincare
+ {const {amD,pmD,amN,pmN}=skinCount(d),st=S.settings.steps;
+  if(amN+pmN===0)R('skincare',{why:'No routine steps set up yet.',next:'Add your morning/evening steps in Setup.'});
+  else if(amD+pmD===0)R('skincare',{why:'No skincare steps logged.',next:'Tap the steps you did in Log.'});
+  else{const miss=[...st.am.filter(s=>!d.skin.am[s]).map(s=>'AM '+s),...st.pm.filter(s=>!d.skin.pm[s]).map(s=>'PM '+s)];
+   const partial=(amN&&amD===0)||(pmN&&pmD===0);
+   R('skincare',{score:Math.round((amD+pmD)/(amN+pmN)*100),partial,pnote:partial?'One routine has nothing logged yet.':'',
+    why:'Steps logged ÷ steps in your routine (morning + evening).',
+    up:[`${amD}/${amN} morning and ${pmD}/${pmN} evening steps logged`],
+    down:miss.length?['Not logged: '+miss.join(', ')]:[],
+    next:miss.length?`If it fits your day: ${miss[0]}.`:'Both routines complete.'})}}
+ // Nutrition
+ {const groups=new Set(d.meals.flatMap(m=>m.groups||[])),fv=d.fruitVeg;
+  if(!d.meals.length&&fv==null)R('nutrition',{why:'No meals or fruit & veg logged.',next:'Log a meal or tap the fruit & veg counter.'});
+  else{let s=0,w=0;const up=[],down=[];
+   if(fv!=null){s+=Math.min(fv/g.fruitVeg,1)*50;w+=50;(fv>=g.fruitVeg?up:down).push(`${fv}/${g.fruitVeg} fruit & veg servings`)}
+   if(d.meals.length){s+=Math.min(groups.size/4,1)*50;w+=50;(groups.size>=4?up:down).push(`${groups.size} food group${groups.size===1?'':'s'} tagged across ${d.meals.length} meal${d.meals.length===1?'':'s'} (4+ = full variety credit)`)}
+   const missing=FOOD_GROUPS.filter(x=>!groups.has(x));
+   R('nutrition',{score:Math.round(s/w*100),partial:fv==null||!d.meals.length,pnote:fv==null?'Fruit & veg count not logged.':(!d.meals.length?'No meals logged — variety not scored.':''),
+    why:'Half: fruit & veg servings vs your goal. Half: variety of food groups you tagged. No calories or nutrients are estimated — no nutrition database is used.',up,down,
+    next:d.meals.length&&missing.length?`Not tagged today: ${missing.slice(0,2).join(', ')} — an easy way to add variety if you'd like.`:(fv!=null&&fv<g.fruitVeg?'One piece of fruit or a handful of veg with your next meal.':'Keep tagging food groups so variety can be scored.')})}}
+ // Hydration
+ if(d.water==null)R('hydration',{why:'Water not logged.',next:'Tap + in Log each time you have a glass.'});
+ else R('hydration',{score:Math.round(Math.min(d.water/g.water,1)*100),why:`Water logged ÷ your goal (${g.water} ${S.settings.waterUnit}).`,
+   up:d.water>0?[`${d.water} ${S.settings.waterUnit} logged`]:[],down:d.water<g.water?[`${g.water-d.water} short of your goal`]:[],
+   next:d.water<g.water?'A glass with your next meal or break.':'Goal reached.'});
+ // Movement
+ {const mm=moveMin(d);
+  if(!d.moves.length&&!d.rest)R('movement',{why:'No activity or rest day logged.',next:'Log any activity — a short walk counts — or mark a rest day.'});
+  else if(!d.moves.length&&d.rest)R('movement',{score:100,why:'Planned rest day — counted as meeting your goal. Rest is part of a routine.',up:['Rest day logged'],next:'Enjoy the rest.'});
+  else R('movement',{score:Math.round(Math.min(mm/g.exercise,1)*100),why:`Active minutes ÷ your goal (${g.exercise} min). Intensity is recorded but doesn't change the score.`,
+   up:[`${mm} min logged (${d.moves.map(m=>esc(m.activity)).join(', ')})`],down:mm<g.exercise?[`${g.exercise-mm} min below your goal`]:[],
+   next:mm<g.exercise?'If you feel like it, a 10-minute walk adds up.':'Goal reached.'})}
+ // Sleep
+ if(d.sleepH==null)R('sleep',{why:'Sleep hours not logged.',next:'Log last night’s hours in Log.'});
+ else{const dur=Math.min(d.sleepH/g.sleep,1),q=d.sleepQ;
+  R('sleep',{score:Math.round(q?dur*70+(q-1)/4*30:dur*100),partial:!q,pnote:q?'':'Quality not logged — score uses hours only.',
+   why:`70%: hours vs your goal (${g.sleep}h, extra sleep isn’t penalised). 30%: your own quality rating (1–5).`,
+   up:[`${d.sleepH}h logged`+(q?`, quality ${q}/5`:'')],down:d.sleepH<g.sleep?[`${(g.sleep-d.sleepH).toFixed(1)}h under your goal`]:[],
+   next:d.sleepH<g.sleep?'Noticing what got in the way tonight can be useful.':'Keep your usual wind-down.'})}
+ // Mood check-in
+ {const n=(d.mood!=null)+(d.energy!=null);
+  if(!n)R('mood',{why:'No mood or energy rating logged.',next:'Two quick taps in Log.'});
+  else R('mood',{score:n*50,partial:n<2,pnote:n<2?'Only one of mood/energy logged.':'',why:'Scores whether you checked in, not how you felt. Low ratings never lower any score.',
+   up:[`${d.mood!=null?'Mood':''}${n===2?' and ':''}${d.energy!=null?'Energy':''} logged`],next:n<2?'Add the other rating.':'Check-in complete.'})}
+ // Meds
+ {const sch=schedule();
+  if(!sch.length)R('meds',{why:'No medicine/supplement schedule entered.',next:'Optional: add your own schedule in Setup.'});
+  else{const tk=sch.filter(x=>d.medLog[x.k]==='taken'),ms=sch.filter(x=>d.medLog[x.k]==='missed'),un=sch.length-tk.length-ms.length;
+   if(!tk.length&&!ms.length)R('meds',{why:'Nothing logged yet for your schedule.',next:'Mark each item Taken or Missed in Log.'});
+   else R('meds',{score:Math.round(tk.length/(tk.length+ms.length)*100),partial:un>0,pnote:un?`${un} scheduled item${un>1?'s':''} not logged yet (not counted).`:'',
+    why:'Items logged “Taken” ÷ items logged, using only the schedule you entered. This never suggests changing a dose or schedule.',
+    up:tk.length?[`Taken: ${tk.map(x=>esc(x.m.name)).join(', ')}`]:[],down:ms.length?[`Missed: ${ms.map(x=>esc(x.m.name)).join(', ')}`]:[],
+    next:ms.length?'A reminder in Setup may help. For what to do about a missed dose, ask your pharmacist or clinician.':'All logged items taken.'})}}
+ // Learning
+ {const lm=learnMin(d),nx=d.learn.some(l=>l.next);
+  if(!d.learn.length)R('learning',{why:'No learning or work session logged.',next:'Log any session — even 10 minutes.'});
+  else R('learning',{score:Math.round(Math.min(lm/g.learning,1)*80+(nx?20:0)),partial:false,
+   why:`80%: minutes vs your goal (${g.learning} min). 20%: writing down one small next step.`,
+   up:[`${lm} min on ${d.learn.map(l=>esc(l.topic)).join(', ')}`].concat(nx?['Next step written']:[]),
+   down:(lm<g.learning?[`${g.learning-lm} min below your goal`]:[]).concat(nx?[]:['No next step noted']),
+   next:nx?esc(d.learn.find(l=>l.next).next):'Write one small next step so tomorrow starts easier.'})}
+ const W=S.settings.weights;let num=0,den=0;const used=[];
+ for(const c of CATS){const r=res[c.id],w=+W[c.id]||0;if(r.score!=null&&w>0){num+=r.score*w;den+=w;used.push(c.id)}}
+ const active=CATS.filter(c=>(+W[c.id]||0)>0).length;
+ return{res,used,active,total:used.length>=3?Math.round(num/den):null,partial:used.some(id=>res[id].partial)||used.length<active}
+}
+
+/* ===================== Skincare ingredient review ===================== */
+const ING={
+ retinoid:{label:'Retinoid',terms:['retinol','retinal','tretinoin','adapalene','tazarotene','trifarotene','retinyl','hydroxypinacolone retinoate']},
+ aha:{label:'AHA (exfoliating acid)',terms:['glycolic acid','lactic acid','mandelic acid']},
+ bha:{label:'BHA (exfoliating acid)',terms:['salicylic acid','betaine salicylate']},
+ pha:{label:'PHA (exfoliating acid)',terms:['gluconolactone','lactobionic acid']},
+ bpo:{label:'Benzoyl peroxide',terms:['benzoyl peroxide']},
+ vitc:{label:'L-ascorbic acid (vitamin C)',terms:['ascorbic acid']},
+ niacinamide:{label:'Niacinamide',terms:['niacinamide']},
+ azelaic:{label:'Azelaic acid',terms:['azelaic acid']},
+ fragrance:{label:'Fragrance / fragrance components',terms:['fragrance','parfum','linalool','limonene','citral','geraniol','eugenol','citronellol','coumarin','cinnamal']},
+ eo:{label:'Essential oil',terms:['lavender oil','lavandula','tea tree','melaleuca alternifolia','peppermint','mentha piperita','eucalyptus','bergamot','lemon peel oil','orange peel oil','citrus aurantium','rosemary leaf oil','essential oil']},
+ alcohol:{label:'Drying alcohol',terms:['alcohol denat','sd alcohol','denatured alcohol']},
+ humect:{label:'Humectant / barrier-type ingredient',terms:['hyaluronic acid','sodium hyaluronate','glycerin','ceramide','squalane','panthenol']},
+ spf:{label:'Sunscreen filter',terms:['zinc oxide','titanium dioxide','avobenzone','octocrylene','homosalate','octisalate','ethylhexyl salicylate','oxybenzone','octinoxate','ethylhexyl methoxycinnamate','ensulizole','bemotrizinol','bisoctrizole','tinosorb','uvinul']}};
+function classify(p){const list=splitList(p.ingredients.toLowerCase()),hits={};
+ for(const k in ING){const f=[];list.forEach((ing,idx)=>{if(ING[k].terms.some(t=>ing.includes(t)))f.push({ing,idx})});
+  if(k==='spf'&&/\bspf\b|sunscreen/i.test(p.name))f.push({ing:'“SPF/sunscreen” in product name',idx:-1});if(f.length)hits[k]=f}
+ return{list,hits}}
+const CONCERNS=[{kw:/dry|dehydrat|flak|tight/,k:['humect'],name:'dryness'},{kw:/acne|breakout|blemish|pimple|spot/,k:['bha','bpo','retinoid','azelaic'],name:'breakouts'},
+ {kw:/pigment|dark spot|melasma|uneven|tone/,k:['vitc','niacinamide','azelaic'],name:'uneven tone'},{kw:/aging|ageing|wrinkle|fine line/,k:['retinoid'],name:'fine lines'}];
+function reviewProducts(){
+ const prof=S.settings.skin,type=prof.type,sens=splitList(prof.sensitivities.toLowerCase()),conc=prof.concerns.toLowerCase();
+ const act=S.products.filter(p=>p.active!==false).map(p=>Object.assign({p},classify(p)));
+ const inR=(x,r)=>x.p.routine===r||x.p.routine==='both';const nm=a=>a.map(x=>esc(x.p.name)).join(', ');
+ const global=[],per={};act.forEach(x=>per[x.p.id]=[]);
+ for(const r of ['am','pm']){const RR=act.filter(x=>inR(x,r)),has=k=>RR.filter(x=>x.hits[k]),RN=r==='am'?'Morning':'Evening';
+  const ret=has('retinoid'),exf=RR.filter(x=>x.hits.aha||x.hits.bha||x.hits.pha),bpo=has('bpo'),vc=has('vitc');
+  if(ret.length&&exf.length)global.push(`${RN}: a retinoid (${nm(ret)}) and an exfoliating acid (${nm(exf)}) are in the same routine. Layering these can raise the chance of dryness or irritation for some people — worth checking the product directions or asking a dermatologist or pharmacist.`);
+  if(ret.length&&bpo.length)global.push(`${RN}: benzoyl peroxide (${nm(bpo)}) with a retinoid (${nm(ret)}). Benzoyl peroxide can break down some retinoids (notably tretinoin) when applied together, and both can be drying.`);
+  if(vc.length&&bpo.length)global.push(`${RN}: benzoyl peroxide (${nm(bpo)}) with L-ascorbic acid (${nm(vc)}). Applied together, benzoyl peroxide may oxidise vitamin C.`);
+  if(exf.length>=2)global.push(`${RN}: ${exf.length} products with exfoliating acids (${nm(exf)}) — possible over-exfoliation for some skin.`)}
+ const sunSens=act.filter(x=>x.hits.retinoid||x.hits.aha),amSun=act.filter(x=>inR(x,'am')&&x.hits.spf);
+ if(sunSens.length&&!amSun.length)global.push(`Retinoids and AHAs (${nm(sunSens)}) can increase sun sensitivity. None of your morning products show sunscreen filters or “SPF” in the name. If you already use sunscreen, add it as a product so it’s accounted for.`);
+ for(const x of act){const f=per[x.p.id];
+  for(const t of sens){const m=x.list.filter(i=>i.includes(t));if(m.length)f.push(`Contains “${esc(m[0])}”, which matches a sensitivity you listed (“${esc(t)}”).`)}
+  if((type==='Sensitive'||sens.some(s=>/fragrance|parfum/.test(s)))&&(x.hits.fragrance||x.hits.eo))f.push(`Contains fragrance or essential-oil ingredients (${esc([...(x.hits.fragrance||[]),...(x.hits.eo||[])].map(h=>h.ing).slice(0,3).join(', '))}) — common triggers for sensitive skin.`);
+  if(type==='Sensitive'&&(x.hits.retinoid||x.hits.aha||x.hits.bha||x.hits.bpo))f.push('Contains an active ingredient that sensitive skin may react to — flagged for your review.');
+  if(type==='Dry'&&x.hits.alcohol&&x.hits.alcohol.some(h=>h.idx<5))f.push('Drying alcohol appears in the first five ingredients, and you listed your skin as dry.')}
+ const concern=[];for(const c of CONCERNS){if(!c.kw.test(conc))continue;
+  const found=act.filter(x=>c.k.some(k=>x.hits[k]));
+  concern.push(found.length?`For <b>${c.name}</b>: ingredient types often found in products marketed for this appear in ${found.map(x=>esc(x.p.name)+' ('+c.k.filter(k=>x.hits[k]).map(k=>ING[k].label).join(', ')+')').join('; ')}.`:`For <b>${c.name}</b>: none of the ingredient types this app recognises for this concern were found in your active products.`)}
+ return{act,global,per,concern}}
+
+/* ===================== Supplement review ===================== */
+const NUTR=['vitamin a','vitamin b6','vitamin b12','vitamin c','vitamin d','vitamin e','vitamin k','folate','folic acid','iron','zinc','magnesium','calcium','omega','fish oil','iodine','selenium','biotin'];
+function reviewSupps(){
+ const all=S.settings.meds,sup=all.filter(m=>m.kind==='supplement'),med=all.filter(m=>m.kind==='medicine'),flags=[];
+ const multi=sup.filter(s=>/multi/i.test(s.name));
+ for(const n of NUTR){const hit=sup.filter(s=>s.name.toLowerCase().includes(n));if(hit.length>=2)flags.push(`“${n}” appears in more than one entry (${hit.map(h=>esc(h.name)).join(', ')}) — possible overlapping intake. Worth confirming total amounts with a pharmacist.`);
+  else if(hit.length===1&&multi.length&&!multi.includes(hit[0]))flags.push(`You take a multivitamin (${esc(multi[0].name)}) and ${esc(hit[0].name)} — multivitamins often contain ${n}, so intake may overlap. Check the labels or ask a pharmacist.`)}
+ if(sup.length&&med.length)flags.push('You’ve logged both medicines and supplements. Some supplements can interact with medicines, and this app <b>cannot check interactions</b>. Bring your full list to a pharmacist or clinician.');
+ all.filter(m=>m.question).forEach(m=>flags.push(`You flagged a question about <b>${esc(m.name)}</b>${m.notes?': '+esc(m.notes):''}.`));
+ return{sup,med,flags}}
+
+/* ===================== UI components ===================== */
+const card=(t,b,cls='')=>`<div class="card ${cls}"><h2>${t}</h2>${b}</div>`;
+const det=(k,label,body)=>`<details data-k="${k}" ${open.has(k)?'open':''} ontoggle="tog(this)"><summary>${label}</summary>${body}</details>`;
+const sec=(k,label,body)=>`<details class="sec" data-k="${k}" ${open.has(k)?'open':''} ontoggle="tog(this)"><summary>${label}</summary>${body}</details>`;
+function tog(el){el.open?open.add(el.dataset.k):open.delete(el.dataset.k)}
+const rate=(f,v,lo='low',hi='high')=>`<div class="rate">${[1,2,3,4,5].map(i=>`<button class="${v===i?'on':''}" onclick="setF('${f}',${i})" aria-label="${f} ${i}">${i}</button>`).join('')}</div><div class="ratelab"><span>${lo}</span><span>${hi}</span></div>`;
+const stepper=(f,v,st,unit)=>`<div class="stepper"><button onclick="stepF('${f}',${-st})" aria-label="decrease">−</button><span class="sv">${v==null?'–':v+unit}</span><button onclick="stepF('${f}',${st})" aria-label="increase">+</button></div>${v!=null?`<button class="link small" onclick="setF('${f}',null,1)">clear</button>`:''}`;
+const chip=(l,on,fn)=>`<button class="chip ${on?'on':''}" onclick="${fn}">${on?'✓ ':''}${esc(l)}</button>`;
+const ckchip=(id,l,on)=>`<label class="chip"><input type="checkbox" class="f" id="${id}" ${on?'checked':''}>${esc(l)}</label>`;
+const itemBtns=(list,id)=>`<span style="white-space:nowrap"><button class="ic" onclick="editItem('${list}','${id}')">Edit</button><button class="ic" onclick="delItem('${list}','${id}')" aria-label="Delete">✕</button></span>`;
+const pbar=(p)=>`<span class="pbar"><i style="width:${Math.max(0,Math.min(100,p))}%"></i></span>`;
+const ev=(list,arr)=>editing&&editing.list===list?arr.find(x=>x.id===editing.id):null;
+
+/* ===================== Actions (day) ===================== */
+function setF(f,v,force){upd(d=>{d[f]=(!force&&d[f]===v)?null:v})}
+function stepF(f,delta){upd(d=>{let v=d[f];if(v==null){if(delta<0)return;v=f==='sleepH'?7:0}v=Math.max(0,Math.round((v+delta)*10)/10);if(f==='sleepH')v=Math.min(v,24);d[f]=v})}
+function txtF(f,v){const d=D(cur);d[f]=v;S.days[cur]=d;save()}
+function skinStep(r,i){const s=S.settings.steps[r][i];upd(d=>{d.skin[r][s]=!d.skin[r][s]})}
+function skinTag(t){upd(d=>{const i=d.skinTags.indexOf(t);i>=0?d.skinTags.splice(i,1):d.skinTags.push(t)})}
+function prodUsed(id){upd(d=>{const i=d.productsUsed.indexOf(id);i>=0?d.productsUsed.splice(i,1):d.productsUsed.push(id)})}
+function med(i,j,st){const k=S.settings.meds[i].id+'@'+j;upd(d=>{d.medLog[k]=d.medLog[k]===st?undefined:st;if(!d.medLog[k])delete d.medLog[k]})}
+function setRest(v){upd(d=>{d.rest=v})}
+function customF(id,v){upd(d=>{d.custom[id]=v})}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():''}
+function clr(...ids){ids.forEach(id=>{const e=document.getElementById(id);if(e){if(e.type==='checkbox')e.checked=false;else if(e.tagName!=='SELECT')e.value=''}})}
+function upsert(list,item){const ed=editing;editing=null;upd(d=>{const i=d[list].findIndex(x=>x.id===item.id);i>=0?d[list][i]=item:d[list].push(item)});if(ed)toast('Saved')}
+function addMeal(){const desc=val('mlD');if(!desc)return toast('Add a short description');
+ const item={id:editing&&editing.list==='meals'?editing.id:uid(),type:val('mlT'),desc,groups:FOOD_GROUPS.filter((g,i)=>$('#mlG'+i).checked)};
+ clr('mlD',...FOOD_GROUPS.map((g,i)=>'mlG'+i));upsert('meals',item)}
+function addMove(){const a=val('mvA');if(!a)return toast('What did you do?');
+ const item={id:editing&&editing.list==='moves'?editing.id:uid(),activity:a,min:+val('mvM')||0,intensity:val('mvI')};clr('mvA','mvM');upsert('moves',item)}
+function addLearn(){const t=val('lnT');if(!t)return toast('Add a skill or topic');
+ const item={id:editing&&editing.list==='learn'?editing.id:uid(),topic:t,min:+val('lnM')||0,done:val('lnD'),next:val('lnN')};clr('lnT','lnM','lnD','lnN');upsert('learn',item)}
+function editItem(list,id){editing={list,id};keepInputs=false;
+ const secMap={meals:'food',products:'st-prod',meds:'st-meds',reminders:'st-rem',custom:'st-custom'};if(secMap[list])open.add(secMap[list]);
+ render();const f=document.querySelector(`[data-form="${list}"]`);if(f)f.scrollIntoView({behavior:'smooth',block:'center'})}
+function cancelEdit(){editing=null;keepInputs=false;render()}
+function delItem(list,id){if(!confirm('Delete this entry?'))return;
+ if(['meals','moves','learn'].includes(list))upd(d=>{d[list]=d[list].filter(x=>x.id!==id)});
+ else{const arr=list==='products'?S.products:S.settings[list];const i=arr.findIndex(x=>x.id===id);if(i>=0)arr.splice(i,1);save();render()}
+ toast('Deleted')}
+function delDay(){if(!S.days[cur])return toast('Nothing logged for this day');if(confirm(`Delete everything logged on ${fmtDate(cur)}?`)){delete S.days[cur];save();render();toast('Day cleared')}}
+
+/* ===================== Views ===================== */
+const VIEWS={};
+VIEWS.today=()=>{const d=D(),isT=cur===today();let h='';
+ if(!S.settings.ack)h+=card('Welcome 🌿',`<p>This is a private space to notice your own patterns — no judgment, and skipping anything is fine.</p>
+  <p class="small"><b>Your data stays on this device.</b> It’s saved in this browser’s local storage (nothing is sent anywhere). Clearing browser data or switching devices erases it, so use <b>Setup → Your data → Export</b> for backups.</p>
+  <p class="small"><b>Not medical advice.</b> Symptom, medicine and supplement tracking is for personal record-keeping only. This app never diagnoses or suggests changing medicines, supplements or doses.</p>
+  <button class="btn" onclick="S.settings.ack=true;save();render()">Got it</button>`,'soft');
+ if(isT)h+=dueReminders();
+ h+=balanceCard(score(cur),true);
+ h+=progressCard(d);
+ const o=observations();
+ if(o.length)h+=card('Gentle observations',`<ul class="obs">${o.map(x=>`<li>${x}</li>`).join('')}</ul><p class="note">Patterns in your own entries — not cause and effect, and not medical insight.</p>`,'calm');
+ h+=`<button class="btn wide" onclick="go('log')">${hasAny(d)?'Continue check-in':(isT?'Start today’s check-in':'Log this day')}</button>`;
+ return h};
+function balanceCard(sc,link){const isT=cur===today();
+ return card(`Balance score <span class="muted small" style="font-weight:400">${isT?'today':fmtDate(cur)}</span>`,
+ (sc.total==null?`<div class="big muted">Not enough information</div><p class="small muted">Needs at least 3 categories logged (currently ${sc.used.length}). Nothing is guessed.</p>`
+ :`<div class="big">${sc.total}<span class="of"> / 100</span></div><p class="small muted">Based on ${sc.used.length} of ${sc.active} categories${sc.partial?' · some entries incomplete':''}${isT?' · day still in progress':''}. It reflects your own goals — not your health or your worth.</p>`)+
+ `<div>${CATS.map(c=>{const r=sc.res[c.id];return`<div class="mrow"><span>${c.icon} ${c.short}</span>${pbar(r.score??0)}<span class="mval ${r.score==null?'muted':''}">${r.score==null?'n/a':r.score}${r.partial?'*':''}</span></div>`}).join('')}</div>
+ <p class="note">* partial entry · n/a = not enough information</p>${link?`<button class="link" onclick="go('scores')">How each score is calculated →</button>`:''}`)}
+function progressCard(d){const g=S.settings.goals,sk=skinCount(d),sch=schedule(),rows=[];
+ const row=(l,v,goal,txt)=>rows.push(`<div class="prow"><div class="spread"><span>${l}</span><span class="${v==null?'muted':''}">${txt}</span></div>${pbar(v==null?0:goal?v/goal*100:0)}</div>`);
+ row('💧 Water',d.water,g.water,d.water==null?'not logged':`${d.water} / ${g.water} ${S.settings.waterUnit}`);
+ row('🌙 Sleep',d.sleepH,g.sleep,d.sleepH==null?'not logged':`${d.sleepH}h / ${g.sleep}h`);
+ const mm=moveMin(d);row('🚶 Movement',d.moves.length?mm:(d.rest?g.exercise:null),g.exercise,d.moves.length?`${mm} / ${g.exercise} min`:(d.rest?'rest day':'not logged'));
+ row('📚 Learning',d.learn.length?learnMin(d):null,g.learning,d.learn.length?`${learnMin(d)} / ${g.learning} min`:'not logged');
+ row('🥗 Fruit & veg',d.fruitVeg,g.fruitVeg,d.fruitVeg==null?'not logged':`${d.fruitVeg} / ${g.fruitVeg}`);
+ const sd=sk.amD+sk.pmD,sn=sk.amN+sk.pmN;row('🧴 Skincare steps',sd||null,sn,sd?`${sd} / ${sn}`:'not logged');
+ if(sch.length){const t=sch.filter(x=>d.medLog[x.k]==='taken').length,l=sch.filter(x=>d.medLog[x.k]).length;row('💊 Meds & supps',l?t:null,sch.length,l?`${t} taken · ${l}/${sch.length} logged`:'not logged')}
+ for(const c of S.settings.custom){const v=d.custom[c.id];if(c.type==='check')row('✨ '+esc(c.name),v?1:null,1,v?'done':'not logged');else row('✨ '+esc(c.name),v??null,+c.goal||0,v==null?'not logged':`${v}${c.goal?' / '+esc(c.goal):''} ${esc(c.unit||'')}`)}
+ const mood=d.mood!=null||d.energy!=null?`Mood ${d.mood??'–'}/5 · Energy ${d.energy??'–'}/5`:'Mood & energy not logged';
+ return card('Today’s progress',`<p class="small muted" style="margin:0 0 4px">${mood}</p>${rows.join('')}<button class="link small" onclick="go('setup');open.add('st-goals')">Adjust goals</button>`)}
+function dueReminders(){const now=new Date(),hm=pad(now.getHours())+':'+pad(now.getMinutes()),done=S.remDone[today()]||[];
+ const due=S.settings.reminders.filter(r=>r.time<=hm&&!done.includes(r.id));if(!due.length)return'';
+ return card('Reminders',due.map(r=>`<div class="rem"><span>🔔 ${esc(r.text)} <span class="muted small">${esc(r.time)}</span></span><button class="ic" onclick="dismiss('${r.id}')">Done</button></div>`).join(''),'soft')}
+function dismiss(id){const t=today();S.remDone={[t]:[...(S.remDone[t]||[]),id]};save();render()}
+function observations(){const out=[],g=S.settings.goals,d=D(),isT=cur===today();
+ if(isT){if(d.water==null)out.push('You haven’t logged water yet today.');else if(d.water>=g.water)out.push(`You’ve reached your water goal today (${d.water}/${g.water}).`);
+  if(d.mood==null&&d.energy==null)out.push('No mood or energy check-in yet today — it only takes two taps.')}
+ const past=[...Array(30)].map((_,i)=>addDays(cur,-i)).filter(s=>S.days[s]).map(s=>D(s));
+ const cmp=(rows,split,metric,a,b,label)=>{const hi=rows.filter(split),lo=rows.filter(x=>!split(x));if(hi.length<3||lo.length<3)return;
+  const A=avg(hi.map(metric)),B=avg(lo.map(metric));
+  out.push(Math.abs(A-B)>=0.3?`Your ${label} was ${A>B?'higher':'lower'} on days ${a} (avg ${A.toFixed(1)}, ${hi.length} days) than on days ${b} (avg ${B.toFixed(1)}, ${lo.length} days).`
+   :`Your ${label} looked about the same whether or not ${a.replace(/^you /,'you ')} (${hi.length} vs ${lo.length} days).`)};
+ cmp(past.filter(x=>x.sleepH!=null&&x.energy!=null),x=>x.sleepH>=g.sleep,x=>x.energy,`you slept ${g.sleep}h or more`,`with less sleep`,'energy');
+ cmp(past.filter(x=>x.mood!=null&&(x.moves.length||x.rest||hasAny(x))),x=>moveMin(x)>0,x=>x.mood,'you logged movement','without movement','mood');
+ cmp(past.filter(x=>x.water!=null&&x.energy!=null),x=>x.water>=g.water,x=>x.energy,'you reached your water goal','below it','energy');
+ const w7=[...Array(7)].map((_,i)=>addDays(cur,-i)).filter(s=>S.days[s]).map(s=>D(s));
+ const sk=w7.filter(x=>Object.values(x.skin.am).some(Boolean)||Object.values(x.skin.pm).some(Boolean)).length;if(sk)out.push(`Skincare logged on ${sk} of the last 7 days.`);
+ const lm=w7.reduce((a,x)=>a+learnMin(x),0);if(lm)out.push(`${lm} minutes of learning logged in the last 7 days.`);
+ const nx=past.flatMap(x=>x.learn).filter(l=>l.next).pop();const lastNext=past.find(x=>x.learn.some(l=>l.next));
+ if(lastNext)out.push(`Your latest next step: “${esc(lastNext.learn.filter(l=>l.next).pop().next)}”`);
+ return out.slice(0,6)}
+
+VIEWS.log=()=>{const d=D(),g=S.settings.goals,st=S.settings.steps;let h=`<p class="sub">${cur===today()?'Tap what applies — every field is optional.':`<b>Editing ${fmtDate(cur)}</b> — changes save instantly.`}</p>`;
+ h+=card('🙂 Mood & energy',`<div class="lbl">Mood</div>${rate('mood',d.mood)}<div class="lbl">Energy</div>${rate('energy',d.energy)}`);
+ h+=card('🌙 Sleep',`<div class="row">${stepper('sleepH',d.sleepH,0.5,'h')}</div><div class="lbl">Quality</div>${rate('sleepQ',d.sleepQ,'poor','great')}`);
+ h+=card('💧 Water',`<div class="row">${stepper('water',d.water,1,' '+esc(S.settings.waterUnit))}<span class="muted small">goal ${g.water}</span></div>`);
+ // skincare
+ const act=S.products.filter(p=>p.active!==false);
+ h+=card('🧴 Skincare',`<div class="lbl">Morning</div><div class="chips">${st.am.map((s,i)=>chip(s,d.skin.am[s],`skinStep('am',${i})`)).join('')||'<span class="muted small">No steps set — add in Setup</span>'}</div>
+  <div class="lbl">Evening</div><div class="chips">${st.pm.map((s,i)=>chip(s,d.skin.pm[s],`skinStep('pm',${i})`)).join('')||'<span class="muted small">No steps set</span>'}</div>
+  ${det('skin','Skin notes & products used',`<div class="lbl">How’s your skin?</div><div class="chips">${SKIN_TAGS.map(t=>chip(t,d.skinTags.includes(t),`skinTag('${t}')`)).join('')}</div>
+   <textarea placeholder="Notes (e.g. dry patch on cheek)" onchange="txtF('skinNotes',this.value)">${esc(d.skinNotes)}</textarea>
+   <div class="lbl">Products used</div><div class="chips">${act.map(p=>chip(p.name,d.productsUsed.includes(p.id),`prodUsed('${p.id}')`)).join('')||'<span class="muted small">Add products in Setup → Skincare products.</span>'}</div>`)}`);
+ // meds
+ const sch=schedule();
+ h+=card('💊 Medicines & supplements',(sch.length?sch.map(x=>{const s=d.medLog[x.k];return`<div class="medrow"><div><b>${esc(x.m.name)}</b><div class="small muted">${esc(x.m.dose)}${x.t?' · '+esc(x.t):''}</div></div><div class="seg"><button class="${s==='taken'?'on':''}" onclick="med(${x.i},${x.j},'taken')">Taken</button><button class="${s==='missed'?'on miss':''}" onclick="med(${x.i},${x.j},'missed')">Missed</button></div></div>`}).join('')
+  :'<p class="muted small">No schedule yet. Add your own in Setup → Medicines & supplements.</p>')+`<p class="note">Personal record only — not medical advice. This app never suggests or changes doses or schedules.</p>`);
+ // food
+ const em=ev('meals',d.meals);
+ h+=card('🥗 Food',`<div class="row"><span>Fruit & veg servings</span>${stepper('fruitVeg',d.fruitVeg,1,'')}<span class="muted small">goal ${g.fruitVeg}</span></div>
+  ${det('food',`Meals & snacks (${d.meals.length})`,`<ul class="items">${d.meals.map(m=>`<li><div><b>${esc(m.type)}</b> ${esc(m.desc)}<div class="tags">${m.groups.map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div></div>${itemBtns('meals',m.id)}</li>`).join('')}</ul>
+   <div data-form="meals"><select id="mlT" class="f">${['Breakfast','Lunch','Dinner','Snack'].map(o=>`<option ${em&&em.type===o?'selected':''}>${o}</option>`).join('')}</select>
+   <input id="mlD" class="f" placeholder="e.g. oats with banana and yogurt" value="${em?esc(em.desc):''}">
+   <div class="lbl">Food groups (tap all that apply)</div><div class="chips">${FOOD_GROUPS.map((x,i)=>ckchip('mlG'+i,x,em&&em.groups.includes(x))).join('')}</div>
+   <div class="row" style="margin-top:8px"><button class="btn" onclick="addMeal()">${em?'Save meal':'Add meal'}</button>${em?'<button class="link" onclick="cancelEdit()">Cancel</button>':''}</div></div>
+   <p class="note">Food groups are your own tags. No calories or nutrient values are estimated — no nutrition database is used.</p>`)}`);
+ // movement
+ const emv=ev('moves',d.moves);
+ h+=card('🚶 Movement',`<ul class="items">${d.moves.map(m=>`<li><div>${esc(m.activity)} <span class="muted small">${m.min} min · ${esc(m.intensity)}</span></div>${itemBtns('moves',m.id)}</li>`).join('')}</ul>
+  <div data-form="moves" class="grid3"><input id="mvA" class="f" placeholder="Activity (e.g. walk)" value="${emv?esc(emv.activity):''}"><input id="mvM" class="f" type="number" inputmode="numeric" placeholder="min" value="${emv?emv.min:''}">
+  <select id="mvI" class="f">${['Light','Moderate','Vigorous'].map(o=>`<option ${emv&&emv.intensity===o?'selected':''}>${o}</option>`).join('')}</select></div>
+  <div class="spread" style="margin-top:8px"><span><button class="btn" onclick="addMove()">${emv?'Save':'Add activity'}</button>${emv?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}</span>
+  <label class="chip ${d.rest?'on':''}"><input type="checkbox" ${d.rest?'checked':''} onchange="setRest(this.checked)">Rest day</label></div>`);
+ // learning
+ const el=ev('learn',d.learn);
+ h+=card('📚 Learning & work',`<ul class="items">${d.learn.map(l=>`<li><div><b>${esc(l.topic)}</b> <span class="muted small">${l.min} min</span>${l.done?`<div class="small">✓ ${esc(l.done)}</div>`:''}${l.next?`<div class="small muted">→ ${esc(l.next)}</div>`:''}</div>${itemBtns('learn',l.id)}</li>`).join('')}</ul>
+  <div data-form="learn"><div class="grid2" style="grid-template-columns:2fr 1fr"><input id="lnT" class="f" placeholder="Skill or topic" value="${el?esc(el.topic):''}"><input id="lnM" class="f" type="number" inputmode="numeric" placeholder="min" value="${el?el.min:''}"></div>
+  <input id="lnD" class="f" placeholder="What I completed or learned" value="${el?esc(el.done):''}"><input id="lnN" class="f" placeholder="One small next step" value="${el?esc(el.next):''}">
+  <button class="btn" onclick="addLearn()">${el?'Save':'Add session'}</button>${el?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}</div>`);
+ // body
+ h+=card('🌿 Body & notes',det('body','Symptoms, discomfort & notes',`<div class="lbl">Symptoms or physical discomfort</div><textarea placeholder="e.g. mild headache in the afternoon" onchange="txtF('symptoms',this.value)">${esc(d.symptoms)}</textarea>
+  <div class="lbl">Other notes</div><textarea onchange="txtF('notes',this.value)">${esc(d.notes)}</textarea>
+  <p class="note">For your own records only. This app doesn’t interpret symptoms. If something worries you, talk to a clinician.</p>`));
+ // custom
+ if(S.settings.custom.length)h+=card('✨ My habits',S.settings.custom.map(c=>{const v=d.custom[c.id];return c.type==='check'?`<div style="margin:4px 0">${chip(c.name,v,`customF('${c.id}',${!v})`)}</div>`
+  :`<div class="row" style="margin:6px 0"><span style="flex:1">${esc(c.name)}${c.goal?` <span class="muted small">goal ${esc(c.goal)} ${esc(c.unit||'')}</span>`:''}</span><input type="number" inputmode="decimal" style="width:90px" value="${v??''}" onchange="customF('${c.id}',this.value===''?null:+this.value)"></div>`}).join(''));
+ h+=`<button class="btn wide" onclick="go('today')">Done — see today</button><button class="btn danger wide" onclick="delDay()">Delete everything logged on this day</button>`;
+ return h};
+
+/* ---------- charts ---------- */
+function barChart(vals,labels,{goal,max,fmt=v=>v,marks=[]}={}){const W=320,H=128,pb=16,pt=14,n=vals.length,bw=W/n;
+ const m=Math.max(max||0,goal||0,...vals.filter(v=>v!=null))||1,y=v=>pt+(H-pt-pb)*(1-v/m);let s=`<svg viewBox="0 0 ${W} ${H}" class="chart" role="img">`;
+ vals.forEach((v,i)=>{const x=i*bw+bw*.2,w=bw*.6,cx=x+w/2;
+  if(v==null)s+=`<text x="${cx}" y="${H-pb-4}" class="cna">${marks[i]||'–'}</text>`;
+  else{s+=`<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(H-pb-y(v),1)}" rx="4" class="bar ${goal&&v>=goal?'met':''}"/><text x="${cx}" y="${y(v)-3}" class="cv">${fmt(v)}</text>`}
+  s+=`<text x="${cx}" y="${H-3}" class="cl">${labels[i]}</text>`});
+ if(goal)s+=`<line x1="0" x2="${W}" y1="${y(goal)}" y2="${y(goal)}" class="goal"/><text x="${W-2}" y="${y(goal)-3}" class="gl">goal</text>`;
+ return s+'</svg>'}
+function lineChart(series,labels){const W=320,H=128,pb=16,pt=10,n=labels.length,bw=W/n,y=v=>pt+(H-pt-pb)*(1-(v-1)/4);let s=`<svg viewBox="0 0 ${W} ${H}" class="chart" role="img">`;
+ for(let v=1;v<=5;v++)s+=`<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="grid"/>`;
+ series.forEach((vals,si)=>{let seg=[];const flush=()=>{if(seg.length>1)s+=`<polyline points="${seg.join(' ')}" class="l${si+1}"/>`;seg=[]};
+  vals.forEach((v,i)=>{const x=i*bw+bw/2;if(v==null){flush();return}seg.push(`${x},${y(v)}`);s+=`<circle cx="${x}" cy="${y(v)}" r="3.5" class="d${si+1}"/>`});flush()});
+ labels.forEach((l,i)=>s+=`<text x="${i*bw+bw/2}" y="${H-3}" class="cl">${l}</text>`);return s+'</svg>'}
+
+VIEWS.trends=()=>{const days=[...Array(7)].map((_,i)=>addDays(cur,i-6)),labs=days.map(s=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'}).slice(0,3));
+ const Ds=days.map(s=>S.days[s]?D(s):null),g=S.settings.goals,pick=f=>Ds.map(d=>d?f(d):null);
+ const sum=(vals,unit,dec=1)=>{const v=vals.filter(x=>x!=null);return v.length?`avg ${avg(v).toFixed(dec)}${unit} over ${v.length} logged day${v.length>1?'s':''}`:'nothing logged this week'};
+ let h=`<p class="sub">${fmtDate(days[0])} – ${fmtDate(days[6])}. “–” means not logged (never counted as zero).</p>`;
+ h+=balanceAreas(days);
+ const mood=pick(d=>d.mood),en=pick(d=>d.energy);
+ h+=card('Mood & energy',`${lineChart([mood,en],labs)}<div class="legend"><span><i style="background:var(--accent)"></i>Mood · ${sum(mood,'')}</span><span><i style="background:var(--sage)"></i>Energy · ${sum(en,'')}</span></div>`);
+ const sl=pick(d=>d.sleepH);h+=card('Sleep (hours)',barChart(sl,labs,{goal:g.sleep})+`<p class="note">${sum(sl,'h')}. Bars turn green when your goal is met.</p>`);
+ const wa=pick(d=>d.water);h+=card(`Water (${esc(S.settings.waterUnit)})`,barChart(wa,labs,{goal:g.water})+`<p class="note">${sum(wa,'')}</p>`);
+ const ex=pick(d=>d.moves.length?moveMin(d):null);h+=card('Exercise (minutes)',barChart(ex,labs,{goal:g.exercise,marks:Ds.map(d=>d&&d.rest&&!d.moves.length?'rest':'')})+`<p class="note">${sum(ex,' min',0)}; rest days shown as “rest”.</p>`);
+ const sk=pick(d=>{const c=skinCount(d),t=c.amD+c.pmD;return t?Math.round(t/(c.amN+c.pmN)*100):null});
+ h+=card('Skincare consistency (% of steps)',barChart(sk,labs,{max:100,goal:100,fmt:v=>v+'%'})+`<p class="note">Logged on ${sk.filter(v=>v!=null).length} of 7 days.</p>`);
+ const ln=pick(d=>d.learn.length?learnMin(d):null);h+=card('Learning time (minutes)',barChart(ln,labs,{goal:g.learning})+`<p class="note">${ln.reduce((a,v)=>a+(v||0),0)} min total this week.</p>`);
+ const bs=days.map(s=>S.days[s]?score(s).total:null);
+ h+=card('Balance score trend',barChart(bs,labs,{max:100})+`<p class="note">Trends matter more than any single day. “–” = not enough information.</p>`);
+ return h};
+function balanceAreas(days){const has=S.settings.meds.length;
+ const A=[{n:'🧴 Skincare',t:d=>Object.values(d.skin.am).some(Boolean)||Object.values(d.skin.pm).some(Boolean),tip:'Even a single step counts — like just sunscreen.'},
+  {n:'🙂 Mood & energy',t:d=>d.mood!=null||d.energy!=null,tip:'Two taps at the top of Log.'},
+  {n:'🌙 Sleep',t:d=>d.sleepH!=null,tip:'Log hours when you first open the app.'},
+  {n:'🥗 Food',t:d=>d.meals.length||d.fruitVeg!=null,tip:'The fruit & veg counter alone is enough.'},
+  {n:'💧 Water',t:d=>d.water!=null,tip:'Tap + whenever you refill.'},
+  ...(has?[{n:'💊 Meds & supps',t:d=>Object.keys(d.medLog).length>0,tip:'A reminder in Setup can make this automatic.'}]:[]),
+  {n:'🚶 Movement',t:d=>d.moves.length||d.rest,tip:'A short walk — or a rest day — both count.'},
+  {n:'📚 Learning',t:d=>d.learn.length>0,tip:'Ten minutes and one next step is plenty.'},
+  ...S.settings.custom.map(c=>({n:'✨ '+esc(c.name),t:d=>d.custom[c.id]!=null&&d.custom[c.id]!==false,tip:'Whenever it feels useful.'}))];
+ const rows=A.map(a=>({...a,c:days.filter(s=>S.days[s]&&a.t(D(s))).length})).sort((x,y)=>x.c-y.c);
+ const low=rows.filter(r=>r.c<=2);
+ return card('Balance — what you’ve been tracking',`<p class="small muted" style="margin-top:0">Days logged out of 7. This shows what you’ve <i>tracked</i>, not how well you’re doing — choosing not to track something is completely fine.</p>
+  ${rows.map(r=>`<div class="mrow"><span>${r.n}</span>${pbar(r.c/7*100)}<span class="mval">${r.c}/7</span></div>`).join('')}
+  ${low.length?`<h3>Might like a little attention</h3><ul class="obs">${low.slice(0,3).map(r=>`<li>${r.n}: logged ${r.c} day${r.c===1?'':'s'} this week. If it matters to you right now — ${r.tip}</li>`).join('')}</ul>`:'<p class="small">Everything has been tracked at least a few times this week. 🌿</p>'}`,'calm')}
+
+VIEWS.scores=()=>{const sc=score(cur),W=S.settings.weights;let h=balanceCard(sc,false);
+ h+=card('How the Balance score works',`<p class="small" style="margin-top:0"><b>Balance = Σ(category score × weight) ÷ Σ(weights)</b>, using only categories with enough information. At least 3 categories are needed, otherwise it shows “Not enough information”. Set a weight to 0 to leave a category out entirely.</p>
+  <p class="small muted">Each category score is 0–100 and compares your log with <i>your own</i> goals. Unlogged items are never treated as zero. A single day is a snapshot, not a verdict — see Trends for the bigger picture. Wrong entry? Fix it in Log and every score updates.</p>`);
+ for(const c of CATS){const r=sc.res[c.id];
+  h+=`<div class="card"><div class="scorehead"><h2 style="margin:0">${c.icon} ${c.name}</h2><span class="scoreval ${r.score==null?'muted':''}" style="${r.score==null?'font-size:14px':''}">${r.score==null?'Not enough info':r.score}</span></div>
+  ${r.partial?`<span class="badge">Partial — ${r.pnote}</span>`:''}
+  <p class="small" style="margin:8px 0 4px"><b>Rule:</b> ${r.why}</p>
+  ${r.up.length?`<p class="small" style="margin:2px 0">↑ ${r.up.join('; ')}</p>`:''}${r.down.length?`<p class="small" style="margin:2px 0">↓ ${r.down.join('; ')}</p>`:''}
+  <p class="small" style="margin:4px 0"><b>Next step:</b> ${r.next}</p>
+  <label class="wt">Weight <input type="number" min="0" max="5" step="0.5" value="${+W[c.id]}" onchange="setW('${c.id}',this.value)"></label></div>`}
+ const pr=reviewProducts(),su=reviewSupps(),pf=pr.global.length+Object.values(pr.per).reduce((a,f)=>a+f.length,0);
+ h+=card('Product & supplement reviews',`<p class="small">Skincare products: <b>${S.products.filter(p=>p.active!==false).length}</b> active, <b>${pf}</b> item${pf===1?'':'s'} flagged for review.<br>Supplements: <b>${su.sup.length}</b> logged, <b>${su.flags.length}</b> question${su.flags.length===1?'':'s'} to discuss with a pharmacist.</p>
+  <p class="note">These are compatibility checks and questions, not scores or ratings. No product ratings or evidence are invented.</p>
+  <button class="link" onclick="go('setup');open.add('st-prod')">Open skincare review →</button><br><button class="link" onclick="go('setup');open.add('st-meds')">Open supplement review →</button>`);
+ return h};
+function setW(id,v){S.settings.weights[id]=Math.max(0,Math.min(5,+v||0));save();render()}
+
+VIEWS.setup=()=>{const s=S.settings,g=s.goals;let h='';
+ h+=sec('st-goals','🎯 Goals',`<div class="grid2">
+  <label class="small">Water per day<input type="number" min="1" value="${g.water}" onchange="setGoal('water',this.value)"></label>
+  <label class="small">Water unit<input value="${esc(s.waterUnit)}" onchange="S.settings.waterUnit=this.value.trim()||'glasses';save()"></label>
+  <label class="small">Sleep (hours)<input type="number" step="0.5" min="1" value="${g.sleep}" onchange="setGoal('sleep',this.value)"></label>
+  <label class="small">Exercise (min)<input type="number" min="1" value="${g.exercise}" onchange="setGoal('exercise',this.value)"></label>
+  <label class="small">Learning (min)<input type="number" min="1" value="${g.learning}" onchange="setGoal('learning',this.value)"></label>
+  <label class="small">Fruit & veg servings<input type="number" min="1" value="${g.fruitVeg}" onchange="setGoal('fruitVeg',this.value)"></label></div>
+  <p class="note">Category weights for the Balance score are on the Scores tab.</p>`);
+ // skin profile + steps + products
+ const pr=reviewProducts(),ep=ev('products',S.products);
+ h+=sec('st-prod','🧴 Skin profile, routine & products',`
+  <div class="lbl">Skin type</div><select onchange="S.settings.skin.type=this.value;save();render()">${['','Normal','Dry','Oily','Combination','Sensitive'].map(o=>`<option value="${o}" ${s.skin.type===o?'selected':''}>${o||'Not set'}</option>`).join('')}</select>
+  <div class="lbl">Concerns (comma-separated)</div><input value="${esc(s.skin.concerns)}" placeholder="e.g. dryness, breakouts" onchange="S.settings.skin.concerns=this.value;save();render()">
+  <div class="lbl">Known sensitivities / ingredients to avoid</div><input value="${esc(s.skin.sensitivities)}" placeholder="e.g. fragrance, lanolin" onchange="S.settings.skin.sensitivities=this.value;save();render()">
+  <div class="lbl">Morning steps (comma-separated)</div><input value="${esc(s.steps.am.join(', '))}" onchange="setSteps('am',this.value)">
+  <div class="lbl">Evening steps</div><input value="${esc(s.steps.pm.join(', '))}" onchange="setSteps('pm',this.value)">
+  <h3>Products</h3>
+  <ul class="items">${S.products.map(p=>{const f=(pr.per[p.id]||[]).length;return`<li><div><b>${esc(p.name)}</b> <span class="muted small">${p.routine==='both'?'AM & PM':p.routine.toUpperCase()}</span>
+   <div class="tags">${p.active===false?'<span class="tag">not in use</span>':''}${f?`<span class="tag flag">${f} flag${f>1?'s':''}</span>`:''}${Object.keys(classify(p).hits).map(k=>`<span class="tag">${ING[k].label}</span>`).join('')}</div></div>
+   <span style="white-space:nowrap"><button class="ic" onclick="toggleProd('${p.id}')">${p.active===false?'Use':'Pause'}</button>${itemBtns('products',p.id)}</span></li>`}).join('')||'<li class="muted small">No products yet.</li>'}</ul>
+  <div data-form="products" class="infobox"><b>${ep?'Edit product':'Add a product'}</b>
+   <input id="pN" class="f" placeholder="Product name" value="${ep?esc(ep.name):''}">
+   <select id="pR" class="f">${[['am','Morning'],['pm','Evening'],['both','Morning & evening']].map(([v,l])=>`<option value="${v}" ${ep&&ep.routine===v?'selected':''}>${l}</option>`).join('')}</select>
+   <textarea id="pI" class="f" placeholder="Paste the full ingredient list from the label (comma-separated)">${ep?esc(ep.ingredients):''}</textarea>
+   <button class="btn" onclick="addProduct()">${ep?'Save':'Add product'}</button>${ep?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}</div>
+  <h3>Ingredient compatibility review</h3>
+  <p class="small muted">Uses: the ingredient lists you entered, your skin type, concerns and sensitivities, and the built-in rules below. No external database and no product ratings. It describes which ingredients are <i>present</i> — it can’t tell you how a product will work for you (concentration and formulation aren’t known), and it doesn’t promise results.</p>
+  ${pr.act.length?'':'<p class="small">Add products with ingredient lists to see a review.</p>'}
+  ${pr.global.map(t=>`<div class="flagbox"><b>Review:</b> ${t}</div>`).join('')}
+  ${pr.act.map(x=>pr.per[x.p.id].length?`<div class="flagbox"><b>${esc(x.p.name)}:</b><ul style="margin:4px 0 0;padding-left:18px">${pr.per[x.p.id].map(t=>`<li>${t}</li>`).join('')}</ul></div>`:'').join('')}
+  ${pr.concern.map(t=>`<div class="infobox">${t} <span class="muted small">Presence of an ingredient ≠ proven results.</span></div>`).join('')}
+  ${pr.act.length&&!pr.global.length&&!Object.values(pr.per).some(f=>f.length)?'<div class="infobox">No conflicts or sensitivity matches found by the built-in rules. This isn’t a guarantee — patch-testing and a dermatologist remain the reliable route.</div>':''}
+  ${det('rules','What the ingredient check looks for',`<ul class="small"><li>Retinoid + exfoliating acid (AHA/BHA/PHA) in the same routine → possible irritation</li><li>Retinoid + benzoyl peroxide together → BP can degrade some retinoids; both can be drying</li><li>Benzoyl peroxide + L-ascorbic acid together → possible oxidation of vitamin C</li><li>2+ exfoliating-acid products in one routine → possible over-exfoliation</li><li>Retinoid/AHA in use but no sunscreen product in the morning → sun-sensitivity reminder</li><li>Any ingredient matching a sensitivity you listed</li><li>Fragrance/essential oils when skin type is Sensitive or you list fragrance</li><li>Drying alcohol in the first five ingredients when skin type is Dry</li><li>Concerns: notes which of your products contain ingredient types commonly marketed for that concern — presence only</li></ul>
+   <p class="note">These are widely given general cautions from dermatology patient education, recognised by simple name matching. Unrecognised or misspelled ingredients won’t be detected. If something isn’t covered, ask a dermatologist or pharmacist.</p>`)}`);
+ // meds
+ const em=ev('meds',s.meds),su=reviewSupps();
+ h+=sec('st-meds','💊 Medicines & supplements',`<p class="note" style="margin-top:0"><b>Personal record-keeping only — not medical advice.</b> Enter the schedule you or your clinician set. The app only records whether you logged taking each item; it never suggests starting, stopping, combining or changing anything.</p>
+  <ul class="items">${s.meds.map(m=>`<li><div><b>${esc(m.name)}</b> <span class="muted small">${esc(m.dose)} · ${m.times.length?m.times.map(esc).join(', '):'no set time'}</span><div class="tags"><span class="tag">${m.kind}</span>${m.question?'<span class="tag flag">question flagged</span>':''}</div></div>${itemBtns('meds',m.id)}</li>`).join('')||'<li class="muted small">Nothing added.</li>'}</ul>
+  <div data-form="meds" class="infobox"><b>${em?'Edit item':'Add an item'}</b>
+   <div class="grid2"><input id="mN" class="f" placeholder="Name" value="${em?esc(em.name):''}"><input id="mD" class="f" placeholder="Dose (as prescribed/labelled)" value="${em?esc(em.dose):''}"></div>
+   <input id="mT" class="f" placeholder="Times, e.g. 08:00, 20:00 (or 'morning')" value="${em?esc(em.times.join(', ')):''}">
+   <select id="mK" class="f">${['medicine','supplement'].map(o=>`<option ${em&&em.kind===o?'selected':''}>${o}</option>`).join('')}</select>
+   <input id="mNote" class="f" placeholder="Notes (optional)" value="${em?esc(em.notes||''):''}">
+   <label class="small" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="mQ" class="f" style="width:auto" ${em&&em.question?'checked':''}> I have a question to ask my pharmacist/clinician about this</label>
+   <button class="btn" onclick="addMed()">${em?'Save':'Add'}</button>${em?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}</div>
+  <h3>Supplement review</h3>
+  <p class="small muted">Uses only the names, doses, schedules and notes you typed. <b>No interaction database is used</b>, so this cannot confirm whether anything is safe together — it only raises questions worth asking.</p>
+  ${su.flags.length?su.flags.map(f=>`<div class="flagbox"><b>Ask:</b> ${f}</div>`).join(''):(s.meds.length?'<div class="infobox">No questions raised by the simple checks. That isn’t a safety confirmation.</div>':'')}
+  <p class="small">Reliable places to read more: <a href="https://ods.od.nih.gov/factsheets/list-all/" target="_blank" rel="noopener">NIH Office of Dietary Supplements fact sheets</a> · <a href="https://medlineplus.gov/druginfo/herb_All.html" target="_blank" rel="noopener">MedlinePlus herbs & supplements</a></p>
+  ${s.meds.length?`<button class="btn ghost" onclick="copyList()">Copy list for my pharmacist</button>`:''}`);
+ // reminders
+ const er=ev('reminders',s.reminders);
+ h+=sec('st-rem','🔔 Reminders',`<ul class="items">${s.reminders.map(r=>`<li><div><b>${esc(r.time)}</b> ${esc(r.text)}</div>${itemBtns('reminders',r.id)}</li>`).join('')||'<li class="muted small">No reminders.</li>'}</ul>
+  <div data-form="reminders" class="grid2" style="grid-template-columns:1fr 2fr"><input id="rT" class="f" type="time" value="${er?esc(er.time):''}"><input id="rX" class="f" placeholder="e.g. Evening skincare" value="${er?esc(er.text):''}"></div>
+  <button class="btn" onclick="addRem()">${er?'Save':'Add reminder'}</button>${er?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}
+  <button class="btn ghost" onclick="enableNotif()">Allow notifications</button>
+  <p class="note">Reminders appear on the Today tab once their time has passed. Pop-up notifications only work while the app is open in your browser — a web page can’t reliably notify you in the background.</p>`);
+ // custom
+ const ec=ev('custom',s.custom);
+ h+=sec('st-custom','✨ Custom habits',`<ul class="items">${s.custom.map(c=>`<li><div><b>${esc(c.name)}</b> <span class="muted small">${c.type==='check'?'yes/no':'number'+(c.goal?` · goal ${esc(c.goal)} ${esc(c.unit||'')}`:'')}</span></div>${itemBtns('custom',c.id)}</li>`).join('')||'<li class="muted small">None yet — e.g. “Journaling”, “Screen-free hour”, “Pages read”.</li>'}</ul>
+  <div data-form="custom"><input id="cN" class="f" placeholder="Habit name" value="${ec?esc(ec.name):''}">
+  <div class="grid3"><select id="cT" class="f"><option value="check" ${ec&&ec.type==='check'?'selected':''}>Yes / no</option><option value="number" ${ec&&ec.type==='number'?'selected':''}>Number</option></select>
+  <input id="cG" class="f" type="number" placeholder="goal" value="${ec?esc(ec.goal||''):''}"><input id="cU" class="f" placeholder="unit" value="${ec?esc(ec.unit||''):''}"></div>
+  <button class="btn" onclick="addCustom()">${ec?'Save':'Add habit'}</button>${ec?'<button class="link" onclick="cancelEdit()"> Cancel</button>':''}</div>
+  <p class="note">Custom habits appear in Log, Today and the Balance view. They aren’t part of the Balance score.</p>`);
+ // data
+ const n=Object.keys(S.days).length;
+ h+=sec('st-data','🔒 Your data & privacy',`<p class="small" style="margin-top:0"><b>How your data is saved:</b> everything is stored in this browser’s <code>localStorage</code> on this device, under the key <code>${KEY}</code>. Nothing is uploaded and the app makes no network requests. Other browsers, devices or web addresses can’t see it. Clearing site data or using private browsing removes it.</p>
+  <p class="small">${n} day${n===1?'':'s'} logged · ${storageOK?'saving normally':'<b>storage unavailable — export now</b>'}</p>
+  <div class="row"><button class="btn" onclick="exportJSON()">Export backup (JSON)</button><button class="btn ghost" onclick="exportCSV()">Export daily summary (CSV)</button></div>
+  <div class="row" style="margin-top:8px"><button class="btn ghost" onclick="$('#importFile').click()">Import backup</button><button class="btn danger" onclick="wipe()">Delete all data</button></div>
+  <p class="note">Moving to a new device or a hosted version: Export here, then Import there.</p>`);
+ h+=`<p class="note" style="text-align:center;margin:16px 0">Daily Balance · personal tracking only · not medical advice</p>`;
+ return h};
+function setGoal(k,v){S.settings.goals[k]=Math.max(0.5,+v||S.settings.goals[k]);save();render()}
+function setSteps(r,v){S.settings.steps[r]=[...new Set(splitList(v))];save();render()}
+function toggleProd(id){const p=S.products.find(x=>x.id===id);p.active=p.active===false;save();render()}
+function upsertS(arr,item){const i=arr.findIndex(x=>x.id===item.id);i>=0?arr[i]=item:arr.push(item);const ed=editing;editing=null;save();render();toast(ed?'Saved':'Added')}
+function addProduct(){const name=val('pN');if(!name)return toast('Add a product name');
+ const old=ev('products',S.products);const item={id:old?old.id:uid(),name,routine:val('pR'),ingredients:val('pI'),active:old?old.active:true};
+ if(!item.ingredients)toast('Tip: paste the ingredient list so it can be reviewed');clr('pN','pI');upsertS(S.products,item)}
+function addMed(){const name=val('mN');if(!name)return toast('Add a name');const old=ev('meds',S.settings.meds);
+ const times=splitList(val('mT')).map(t=>t.replace(/[^\w: .]/g,'').slice(0,20)).filter(Boolean);
+ const item={id:old?old.id:uid(),name,dose:val('mD'),times,kind:val('mK'),notes:val('mNote'),question:$('#mQ').checked};
+ if(old&&JSON.stringify(old.times)!==JSON.stringify(times))toast('Times changed — past logs for removed times won’t be scored');
+ clr('mN','mD','mT','mNote','mQ');upsertS(S.settings.meds,item)}
+function addRem(){const t=val('rT'),x=val('rX');if(!t||!x)return toast('Add a time and a label');const old=ev('reminders',S.settings.reminders);
+ clr('rT','rX');upsertS(S.settings.reminders,{id:old?old.id:uid(),time:t,text:x});S.settings.reminders.sort((a,b)=>a.time.localeCompare(b.time));save()}
+function addCustom(){const n=val('cN');if(!n)return toast('Add a habit name');const old=ev('custom',S.settings.custom);
+ clr('cN','cG','cU');upsertS(S.settings.custom,{id:old?old.id:uid(),name:n,type:val('cT'),goal:val('cG'),unit:val('cU')})}
+function copyList(){const lines=S.settings.meds.map(m=>`- ${m.name} (${m.kind}) — ${m.dose||'dose not entered'} — ${m.times.join(', ')||'no set time'}${m.notes?' — note: '+m.notes:''}${m.question?' — I have a question about this':''}`);
+ const txt=`My medicines & supplements (self-reported, ${today()}):\n${lines.join('\n')}\n\nQuestion: Are any of these likely to interact, or overlap in what they contain?`;
+ (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied — paste it into a note or message')).catch(()=>{prompt('Copy this list:',txt)})}
+
+/* ===================== Export / import ===================== */
+function download(name,text,type){const b=new Blob([text],{type}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+function exportJSON(){download(`daily-balance-backup-${today()}.json`,JSON.stringify(S,null,2),'application/json');toast('Backup downloaded')}
+function exportCSV(){const q=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const head=['date','mood','energy','sleep_h','sleep_quality','water','fruit_veg','meals','skincare_am','skincare_pm','skin_notes','products_used','exercise_min','activities','rest_day','learning_min','learning','meds_taken','meds_missed','symptoms','notes','balance_score',...CATS.map(c=>'score_'+c.id)];
+ const rows=Object.keys(S.days).sort().map(s=>{const d=D(s),sk=skinCount(d),sc=score(s),sch=schedule();
+  return[s,d.mood,d.energy,d.sleepH,d.sleepQ,d.water,d.fruitVeg,d.meals.map(m=>`${m.type}: ${m.desc} [${m.groups.join('/')}]`).join(' | '),`${sk.amD}/${sk.amN}`,`${sk.pmD}/${sk.pmN}`,[d.skinTags.join('/'),d.skinNotes].filter(Boolean).join(' — '),
+   d.productsUsed.map(id=>(S.products.find(p=>p.id===id)||{}).name).filter(Boolean).join(' | '),d.moves.length?moveMin(d):'',d.moves.map(m=>`${m.activity} ${m.min}min ${m.intensity}`).join(' | '),d.rest?'yes':'',
+   d.learn.length?learnMin(d):'',d.learn.map(l=>`${l.topic} ${l.min}min${l.done?' done: '+l.done:''}${l.next?' next: '+l.next:''}`).join(' | '),
+   sch.filter(x=>d.medLog[x.k]==='taken').map(x=>x.m.name+(x.t?' '+x.t:'')).join(' | '),sch.filter(x=>d.medLog[x.k]==='missed').map(x=>x.m.name+(x.t?' '+x.t:'')).join(' | '),
+   d.symptoms,d.notes,sc.total??'',...CATS.map(c=>sc.res[c.id].score??'')].map(q).join(',')});
+ download(`daily-balance-${today()}.csv`,[head.join(','),...rows].join('\n'),'text/csv');toast('CSV downloaded')}
+function importJSON(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const data=JSON.parse(r.result);
+  if(!data||typeof data!=='object'||!data.days||!data.settings)throw 0;
+  if(!confirm(`Replace the data on this device with the backup (${Object.keys(data.days).length} days)? Export first if you want to keep the current data.`))return;
+  S=fill(defaults(),data);save();render();toast('Backup imported')}catch(e){toast('That file doesn’t look like a Daily Balance backup')}inp.value=''};r.readAsText(f)}
+function wipe(){if(!confirm('Delete ALL your data on this device? This can’t be undone.'))return;if(!confirm('Really delete everything? Consider exporting a backup first.'))return;
+ S=defaults();try{localStorage.removeItem(KEY)}catch(e){}save();render();toast('All data deleted')}
+
+/* ===================== Reminders (in-app) ===================== */
+const notified=new Set();
+function enableNotif(){if(!('Notification' in window))return toast('Notifications aren’t supported in this browser');
+ Notification.requestPermission().then(p=>toast(p==='granted'?'Notifications on (while the app is open)':'Notifications not allowed — reminders will still show on Today'))}
+setInterval(()=>{const now=new Date(),hm=pad(now.getHours())+':'+pad(now.getMinutes()),t=today(),done=S.remDone[t]||[];
+ for(const r of S.settings.reminders){const k=t+r.id;if(r.time===hm&&!done.includes(r.id)&&!notified.has(k)){notified.add(k);
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification('Daily Balance',{body:r.text})}catch(e){}
+  toast('🔔 '+r.text);if(tab==='today'&&cur===t)render()}}},20000);
+
+/* ===================== Router ===================== */
+const TABS=[['today','Today','☀️'],['log','Log','✏️'],['trends','Trends','📈'],['scores','Scores','🧮'],['setup','Setup','⚙️']];
+const TITLES={today:'Today',log:'Check-in',trends:'Weekly trends',scores:'Scores',setup:'Setup'};
+function go(t){if(t!==tab){editing=null;tab=t;window.scrollTo(0,0)}keepInputs=false;render()}
+function setDate(v){if(!v)return;cur=v>today()?today():v;editing=null;keepInputs=false;render()}
+function shiftDay(n){setDate(addDays(cur,n))}
+function render(){const main=$('#view'),snap={};
+ if(keepInputs&&main.dataset.tab===tab)main.querySelectorAll('.f[id]').forEach(e=>snap[e.id]=e.type==='checkbox'?e.checked:e.value);
+ keepInputs=true;main.dataset.tab=tab;main.innerHTML=VIEWS[tab]();
+ for(const id in snap){const e=document.getElementById(id);if(e)e.type==='checkbox'?e.checked=snap[id]:e.value=snap[id]}
+ $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')" aria-current="${k===tab}"><span class="i">${i}</span>${l}</button>`).join('');
+ $('#title').textContent=TITLES[tab];const dp=$('#dp');dp.value=cur;dp.max=today();$('#nextDay').style.visibility=cur>=today()?'hidden':'visible';
+ document.querySelector('.datebar').style.display=tab==='setup'?'none':'flex'}
+// roll over to the new day if the app stays open past midnight
+let lastToday=today();setInterval(()=>{const t=today();if(t!==lastToday){if(cur===lastToday)cur=t;lastToday=t;render()}},60000);
+render();
+</script>
+</body>
+</html>
